@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>I LOVE YOU → QUESTION → RESPONSE</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box }
+    body {
+      overflow:hidden; font-family:Arial,sans-serif;
+      background:#FEC66B; height:100vh;
+    }
+    /* Start Screen */
+    #startScreen {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      background:#FEC66B; z-index:10;
+    }
+    #startBtn {
+      padding:1rem 2rem; font-size:1.5rem; font-weight:bold;
+      background:#6A0572; color:#fff; border:none; border-radius:.5rem;
+      cursor:pointer; transition:transform .2s;
+    }
+    #startBtn:hover { transform:scale(1.1) }
+
+    /* Main Panels */
+    #panel, #response {
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      width:100%; height:100%;
+    }
+    .bars {
+      display:flex; align-items:center; margin-bottom:1rem;
+    }
+    .bar {
+      width:5px; height:4rem; background:#FFF;
+      margin:0 2rem; transform-origin:center;
+    }
+    #text {
+      font-size:5rem; font-weight:bold; color:#6A0572;
+      opacity:0; transform:scale(0.3);
+      margin-bottom:.5rem;
+    }
+    #buttons {
+      display:none; position:relative;
+      width:300px; height:60px; margin-top:1.5rem;
+    }
+    button {
+      position:absolute; top:50%; transform:translateY(-50%);
+      padding:.5rem 1.5rem; font-size:1.25rem; font-weight:bold;
+      background:#6A0572; color:#FFF; border:none; border-radius:.5rem;
+      cursor:pointer; transition:transform .2s;
+    }
+    #yesBtn { left:20px; }
+    #noBtn  { left:140px; transition:none; }
+    #yesBtn:hover, #noBtn:hover { transform:translateY(-50%) scale(1.1) }
+
+    /* Response */
+    #response img {
+      width:200px; border-radius:.5rem; margin-bottom:1rem;
+    }
+    #response p {
+      font-size:2rem; font-weight:bold; color:#6A0572;
+    }
+
+    /* slow down animations to 2s */
+    @keyframes popText {
+      0%   { transform:scale(.3); opacity:0 }
+      60%  { transform:scale(1.2); opacity:1 }
+      85%  { transform:scale(1);   opacity:1 }
+      100% { transform:scale(.3); opacity:0 }
+    }
+    .pop-text {
+      animation: popText 2s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes popBar {
+      0%   { transform:scaleX(1) }
+      60%  { transform:scaleX(.2) }
+      85%  { transform:scaleX(1) }
+      100% { transform:scaleX(1) }
+    }
+    .pop-bar {
+      animation: popBar 2s cubic-bezier(.22,1,.36,1) both;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" src="TikVid.io_7481858163407473927.mp3" loop></audio>
+
+  <div id="startScreen">
+    <button id="startBtn">Nhấn để bắt đầu</button>
+  </div>
+
+  <div id="panel">
+    <div class="bars">
+      <span class="bar"></span>
+      <span id="text"></span>
+      <span class="bar"></span>
+    </div>
+    <div id="buttons">
+      <button id="yesBtn">YES</button>
+      <button id="noBtn">NO</button>
+    </div>
+  </div>
+
+  <div id="response">
+    <img src="https://i.pinimg.com/originals/fa/a2/bf/faa2bf2fc4a1ac4dec5d22242cc34f53.gif" alt="Us">
+    <p>Yayyy! I love you too! 💕😍!</p>
+  </div>
+
+  <script>
+    const bgm         = document.getElementById('bgMusic');
+    const startScreen = document.getElementById('startScreen');
+    const startBtn    = document.getElementById('startBtn');
+    const panel       = document.getElementById('panel');
+    const el          = document.getElementById('text');
+    const bars        = document.querySelectorAll('.bar');
+    const buttons     = document.getElementById('buttons');
+    const yesBtn      = document.getElementById('yesBtn');
+    const noBtn       = document.getElementById('noBtn');
+    const resp        = document.getElementById('response');
+
+    const loves    = ['I LOVE YOU','I ❤️ YOU','I ❤️ U','❤️'];
+    const question = 'DO YOU LOVE ME?';
+    let idx = 0;
+
+    function avoidNo(e) {
+      const r = noBtn.getBoundingClientRect();
+      const nx = r.left + r.width/2, ny = r.top + r.height/2;
+      if (Math.hypot(e.clientX-nx, e.clientY-ny) < 120) {
+        const maxX = window.innerWidth  - noBtn.offsetWidth;
+        const maxY = window.innerHeight - noBtn.offsetHeight;
+        noBtn.style.position = 'fixed';
+        noBtn.style.left     = `${Math.random()*maxX}px`;
+        noBtn.style.top      = `${Math.random()*maxY}px`;
+      }
+    }
+
+    function nextLove(){
+      el.textContent    = loves[idx];
+      el.style.fontSize = loves[idx]==='❤️'?'10rem':'5rem';
+      el.classList.remove('pop-text');
+      void el.offsetWidth;
+      el.classList.add('pop-text');
+      bars.forEach(b=>{
+        b.classList.remove('pop-bar');
+        void b.offsetWidth;
+        b.classList.add('pop-bar');
+      });
+      idx++;
+      if(idx<loves.length) {
+        setTimeout(nextLove, 2400);
+      } else {
+        setTimeout(showQuestion, 2400);
+      }
+    }
+
+    function showQuestion(){
+      el.className='';
+      bars.forEach(b=>b.className='bar');
+      el.textContent    = question;
+      el.style.fontSize = '5rem';
+      el.style.opacity  = '1';
+      el.style.transform= 'scale(1)';
+      buttons.style.display='block';
+      buttons.addEventListener('mousemove',avoidNo);
+      noBtn.addEventListener('mouseenter',avoidNo);
+    }
+
+    startBtn.addEventListener('click', ()=>{
+      startScreen.style.display='none';
+      bgm.play().catch(()=>{});
+      panel.style.display='flex';
+      nextLove();
+    },{ once:true });
+
+    yesBtn.addEventListener('click', ()=>{
+      panel.style.display='none';
+      resp.style.display ='flex';
+    });
+  </script>
+</body>
+</html>
